@@ -1,0 +1,119 @@
+---
+title: "Assignment 2: Titanic"
+author: "Saikrishna Javvadi"
+student ID: "20236648"
+date: "`r Sys.Date()`"
+output: word_document
+---
+
+
+## Question of Interest
+
+Was the socioeconomic class of passengers on the Titanic a predictor of whether a passenger survived or not ?  
+
+### Load the libraries needed.
+
+The libraries needed are 'tidyverse' and 'titanic'.  If you are running this code on your own pc you will have to install them,  if you are running this in a lab they are already installed.
+
+Load up the libraries as follows:   
+
+```{r }
+
+library(tidyverse) 
+library(titanic)
+
+```
+
+The data are contained in a package called 'titanic'. The dataset iteslf is called titanic_train.
+
+## Subjective Impressions
+
+
+The key variable of interest 'Survival' (representing whether a passenger survived or not) is coded as 0 and 1.  To make the analysis clearer to interpret create a new variable which recoded the 0 and 1 to No and Yes respectively.
+
+```{r}
+
+passengers <- titanic_train %>% 
+ mutate(Survived = ifelse(Survived == 0, "No", "Yes"))
+
+```
+
+There are three levels of the (categorical) variable Pclass namely 1st, 2nd and 3rd (coded as 1,2,3).
+
+A table of the proportion of survivors by Class (with clearer labels) is as follows:
+
+Task: Create the table of summaries needed by inserting the relevant r chunk
+```{r}
+
+#summary(titanic_train)
+passengers %>% select(Survived, Pclass) %>% table() %>% prop.table()
+```
+
+
+Task: Create the table of corresponding percentages by inserting the relevant r chunk
+```{r}
+
+passengers %>%
+     group_by(Pclass, Survived) %>%
+     summarise (n = n()) %>%
+     mutate(Percentage = n / sum(n)*100)
+```
+
+
+Task: add some text here to interpret the results from the tables you have just created.
+
+Around 63% of people in class 1 survived , which is the highest when compared to the other two classes(2,3) of passengers.
+The percentage of people survived decreases when we go along from class 1 to 3,so one could draw a conclusion that people in class 1
+had more chance of surviving than the other two.Although one can also observe that there were relatively more number of people in class 3 then the other two classes, which could be determining factor on why there were deaths in this class of the titanic ship.
+
+
+Time to create some barcharts.  Some of the code will be given, some you will have to copy from the example file given and adapt accordingly.  Hint, look at the plots relating to gender and adapt them by replacing Gender with Class (i.e. Pclass variable).
+
+# Bar chart of survival overall
+
+Task: Create a bar chart of survival overall by inserting the relevant r chunk
+```{r}
+passengers %>%  
+  ggplot(aes(Survived,fill=Survived))+ 
+  geom_bar()+ylab("number")
+```
+
+# Plot bar chart of survival by Class 
+
+Task: Create a stacked barchart of survival by Class by inserting the relevant r chunk.
+```{r}
+
+ggplot(data=passengers, aes(Pclass))+
+     geom_bar(aes(fill=Survived), position="fill") +
+     ylab("Percent")
+
+```
+
+
+
+Task: Once you have created the plot write your interpretation here based on these plots.
+
+The plots give a clearer picture of the Survival of people on Titanic than the tables created in the previous section. It can be clearly observed that the chance of survival is decreasing while traveling from left to right on the barchart i.e people in class 1 had much better chance of survival than those of people in class 3.
+
+
+Bonus question.  How would you create a stacked bar chart of survival by Class and Gender ?  (Hint facet_grid() will be useful).
+
+Task: Create the faceted barchart by inserting the relevant r chunk.
+```{r}
+
+ passengers %>% ggplot() +
+  geom_bar(aes(Sex, fill = Survived), position = "fill") + 
+  facet_wrap(~Pclass) +
+  labs(y = "Proportion of people survived")
+
+```
+
+# Conclusion
+
+Task: Write a short conclusion of whether you think Class is a useful predictor of whether a person survived the titanic and the role Gender  plays in addition.  Knit the file as a Word document (using the Knit icon above).  
+
+Finally, we could come to a conclusion from the above table and plots that the socioeconomic class is an important attribute for predicting the survival of passengers. As we could see from some of the above plots that people in class 1 had better rate of survival that those in class 2 or 3.
+
+
+
+Save your markdown and Word file and Turn them in on the course Blackboard page once the deadline date has been set.
