@@ -1,2 +1,2 @@
 # R_Programming
-R_programming
+Learning to program in R by assignments
