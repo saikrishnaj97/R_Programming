@@ -1,0 +1,172 @@
+---
+title: "Assignment 3: Interval estimation"
+author: "Saikrishna Javvadi"
+student ID: "20236648"
+date: "`r Sys.Date()`"
+output: word_document
+---
+
+## Context: Celtic Study introduced in class.
+
+A scaffold for the analysis when the primary response variable is VO2 max is found in your Practical on Blackboard. You need to rerun the analysis using the Squat variables (i.e. Squat_Pre, Squat_Post) to see if there has been any improvement on average (95% confidence interval) and provide a tolerance interval for the likely improvement for 95% of players in the population of interest (with 95% confidence).
+
+
+```{r}
+library(infer)
+library(tidyverse)
+library(tolerance)
+```
+
+## Read in the training intervention data
+
+Read in the data and have a look at the variable names and structure of the data. Make sure the training_intervention.csv file is in the same folder as this Assignment.Rmd file so R knows where to find the data!
+
+```{r}
+
+train.df <- read.csv("training_intervention.csv")
+glimpse(train.df)
+
+```
+
+## Focus on the squats response variable
+
+
+## Summary Statistics of Pre and Post
+
+1. Summarise the pre- and post-intervention squat variables 
+
+```{r}
+train.df %>% select(Squat_Pre,Squat_Post) %>% summary()
+
+```
+
+## Mean and Standard Deviation of Pre and Post
+
+2. Get the mean and standard deviation of pre- and post-intervention squats
+
+```{r}
+train.df %>% select(Squat_Pre,Squat_Post) %>%
+            summarize(Pre_Mean=mean(Squat_Pre), Pre_SD= sd(Squat_Pre),
+                      Post_Mean=mean(Squat_Post), Post_SD= sd(Squat_Post))
+
+```
+
+
+## Scatterplot of Pre and Post with line of equality
+
+3. Produce a scatterplot of pre- and post-intervention squats along with the line of equality 
+
+```{r}
+train.df %>% 
+  ggplot(aes(x = Squat_Pre, y = Squat_Post)) +
+  geom_point() + 
+  ggtitle("Scatterplot of Pre and Post intervention squats") +
+  ylab("Post intervention squats (units)") +
+  xlab("Pre intervention squats (units)") +
+  geom_abline(slope=1, intercept=0)
+```
+
+4. Interpret the plot in your own words
+
+It can be observed from the plot that the graph is a improvement metric visual and the points that lie to the left/above of the  line, show an improvement from the intervention(y>x), the points on the line will show no improvement(y=x) and the ones below/right of the line will show negative improvement(y<x). Since all the points show an improvement(y>x), it can be concluded that all the players have an improvement post intervention.
+
+
+
+## Calculate the Improvement
+
+5. Calculate a new variable 'Improvement' and have a look at the data frame to see that it has been created.  High values of squats are good so Post minus Pre is a better measure than Pre minus Post to capture this.
+
+```{r}
+
+train.df <- train.df %>% 
+  mutate(Improvement = Squat_Post-Squat_Pre) %>%
+  glimpse()
+
+```
+
+## Mean and Standard Deviation of Improvement
+
+6. Calculate the mean and SD of Improvement
+
+```{r}
+train.df %>% select(Improvement) %>%
+            summarize(Improvement_Mean=mean(Improvement), Improvement_SD= sd(Improvement))
+```
+
+
+## Boxplot of Improvement
+
+7. Produce a boxplot of Improvement
+
+```{r}
+train.df %>% ggplot(aes(x = "", y = Improvement)) +
+        geom_boxplot() + 
+  ggtitle("Boxplot of Improvement in Squats") +
+  ylab("Improvement in Squats (units)") +
+  xlab("") +
+  coord_flip()
+
+
+```
+
+## 95% Confidence Interval for the mean
+
+8. Calculate and interpret a 95% confidence interval for the population mean improvement in squats (hint: use the t.test function)
+
+```{r}
+
+train.df %>% 
+  select(Improvement) %>% 
+  t.test()
+
+```
+
+
+## 95% Bootstrap CI for the mean
+
+9. Calculate a 95% bootstrap interval for the mean improvement in squats
+
+```{r}
+
+boot <- train.df %>%
+  specify(response = Improvement) %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "mean")
+
+percentile_ci <- get_ci(boot)
+round(percentile_ci,2)
+
+
+```
+
+
+10. Visualise the bootstrap interval and comment on any differences with the 95% confidence interval above
+
+```{r}
+boot %>% 
+  visualize(endpoints = percentile_ci, direction = "between") +
+  xlab("Bootstrap Mean") + ylab("Frequency")
+
+```
+
+Comment: The confidence interval obtained above is between (26.26609 and 32.62280), while after bootstrap the confidence interval shifts to the left (26.67,32.22). We can observe this difference because before bootstrap there were only 3 unique values but after bootstrap the values are more in number due to repeated sampling which gives a better estimate of the confidence interval.
+
+
+## 95% Tolerance Interval
+
+
+11. Calculate a 95% tolerance interval covering 95% of improvement values 
+
+```{r}
+normtol.int(train.df$Improvement, alpha = 0.05, P = 0.95)
+
+```
+
+
+## Conclusion
+
+12. Write up a conclusion using the plots and intervals you have obtained above
+
+The scatterplot shows the squats pre and post intervention. Since the improvement is positive (doesn't include 0), it can be concluded that everyone in the sample showed an improvement post intervention.We can also observe that the mean number of squats also increases post intervention.
+
+Using the 95% confidence interval, it can be concluded with 95% confidence that the mean improvement of the population in squats lies between 26.27 units and 32.62 units. There is an average increase in the population average in squats since the interval has positive values.Since we can see only 3 unique values (boxplot) 20,30,40 from the sample, bootstrap can be used to add variability to sample statistics. It can be observed that even after bootstraping, we can predict with 95% confidence that 95% of average improvement in squats for the population lies between 26.67 and 32.22 units.It can be predicted with 95% confidence that atleast 95% of the improvement values for an individual lies between 13.76674 and 45.12215.
