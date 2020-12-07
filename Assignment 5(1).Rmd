@@ -1,0 +1,205 @@
+---
+title: "Assignment 5. Correlation and Regression"
+author: "Saikrishna Javvadi"
+student ID: "20236648"
+date: "`r Sys.Date()`"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Complete this assignment and submit the knitted Word file to Blackboard using Turn It In. Download the CO2 data and put it in the same folder as this Rmd file so that R knows where to  look when you are reading in the data.
+
+## Modelling the relationship between time of the year and CO2 in the atmosphere
+
+### Study Description: 
+Scientists at a research station in Brotjacklriegel, Germany recorded CO2 levels, in parts per million, in the atmosphere for each day from the start of August through November in 2011. The variables included are 
+
+- CO2: Carbon dioxide (CO2) level (in parts per million)
+- Day: Number of day in 2011 (August 1 = day 213, November 30th = day 334)
+
+### Aims: 
+To investigate whether there is sufficient evidence of a dependency of carbon dioxide and time in Germany.
+
+
+```{r}
+# Load the libraries needed. You may need to install moderndive 
+library(tidyverse)
+library(moderndive)
+```
+
+
+```{r}
+# read in the data
+co2_df <- read.csv("co2_data.csv", header=TRUE)
+glimpse(co2_df)
+```
+
+
+
+### Scatterplot 
+
+1. Create a scatterplot of CO2 and day and give a subjective impression of the relationship between the variables
+
+
+```{r}
+ggplot(co2_df, aes(y=CO2, x=Day)) + 
+  geom_point() +
+  labs(x = "Day", y = "CO2 level (in parts per million)", 
+       title = "Scatterplot")
+
+```
+
+
+### Correlation
+
+2. Calculate and interpret the Pearson correlation coefficient between CO2 and day
+
+```{r}
+co2_df %>% select(CO2,Day) %>% cor()
+
+```
+```{r}
+ggplot(co2_df, aes(y=CO2, x=Day)) + 
+  geom_point() +
+  labs(x = "Day", y = "CO2 level (in parts per million)", 
+       title = "Correlation is 0.760463")
+```
+The correlation coefficient $r=0.760463$ suggests a very strong positive **linear** relationship between CO2 level and the Day of the year.
+
+```{r}
+ggplot(co2_df, aes(y=CO2, x=Day)) + 
+  geom_point() +
+  geom_smooth() +
+  labs(x = "Day", y = "CO2 level (in parts per million)", 
+       title = "Scatterplot with Lowess Smoother")
+```
+
+### Fit the model
+
+3. Fit a regression model in `R`, include a summary of the model
+
+```{r}
+
+ggplot(co2_df, aes(y=CO2, x=Day)) + 
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "Day", y = "CO2 level (in parts per million)", 
+       title = "Scatterplot with line of best fit")
+
+
+```
+```{r}
+CO2_model <- lm(CO2 ~ Day, data = co2_df)
+# regression tables
+summary(CO2_model)
+# tidier tables
+get_regression_table(model = CO2_model)
+```
+
+## Interpret the results
+4. Write out the equation of the line of best fit and interpret the intercept and slope parameters
+
+Equation of line of best fit is $CO2=328.85218 + 0.16071Days$ which interprets/suggests that the CO2 level increases with the increase in day of the year.
+
+From the sample slope we can interpret that a 1 day increase in the year 2011 will result in an increased CO2 level of 0.161 ppm on average.
+
+From the sample intercept we can interpret that CO2 level will have an average value of 328.85 ppm on the 1st of January of 2011.
+
+
+### Hypothesis tests
+
+5. Interpret the p-value and confidence interval for the slope parameter
+
+$H_0$: slope=0 \
+$H_A$: slope!=0 \
+After observing the p-value from the above summaries, we can conclude that the null hypothesis can be rejected as the p-value is very much lower than the 0.05.
+
+For the slope the 95% confidence interval  is between 0.136 and 0.186 which does not include 0 in it's interval, thus in concordance with the hypothesis test. While the p-value indicates if the slope is zero or not but no indication of the interval is lies between, the CI does.
+
+
+
+6. Obtain and interpret the coefficient of determination $R^2$ for your model
+
+```{r}
+get_regression_summaries(CO2_model)
+
+```
+The value of $R^2$ for this CO2 regression model is 0.578 which is 57.8%, hence we can conclude that a considerable amount of the variability in CO2 level is explained by its dependence on the time of the year. But since the variability explained is only 57.8%, there can be other predictors that can explain the rest of the variability (approximately 42%)
+
+### Make some predictions across the range of age where data were collected.
+
+7. Predict CO2 on September 1st, October 1st and November 1st (days 244, 274 and 305)
+
+```{r}
+predict_CO2_level <- data.frame(
+  Day = c(244, 274, 305)
+)
+get_regression_points(CO2_model, newdata = predict_CO2_level)
+
+```
+
+
+8. Calculate 95% Prediction Intervals for actual CO2 on September 1st, October 1st and November 1st (days 244, 274 and 305)
+
+```{r}
+
+predict(CO2_model, newdata = predict_CO2_level, interval = "prediction",level = 0.95)
+
+```
+
+### Assumptions
+
+9. Check the assumptions underlying the model, providing plots to back up your claims
+
+There are 4 assumptions associated with applying a linear regression model on data that are to be checked :
+1. Independence : The sample is representative of the population of interest and the subjects are independent. 
+2. Linearity : The relationship between the mean response and the explanatory variable is linear in the population.
+3. Normality : The response exhibits variability about the population regression line in the shape of a Normal distribution
+4. Equal spread: The standard deviation of the response is the same for any given value of the explanatory variable.
+
+The first assumption relates to the sample itself - if the sample is not representative of the population of interest all inference is extremely dubious. Independence is valid in the CO2 level example as the response and explanatory variables were measured once only for each day separately.
+
+The assumption that relates to Linearity can be checked by looking at the scatter plot. If the linearity assumption is valid the overall pattern should resemble a linear pattern (a smoother is very useful here).
+
+The Normality and Equal Spreads assumptions relate to the distribution and spread of the response about the population regression line. To investigate whether these assumptions are plausible, based on the sample available, is best achieved using suitable residual plots.
+
+A residual (in the regression context) is the difference between the observed value of the response and that predicted by the regression equation (the so-called fitted value) at the value of each subject's explanatory variable in turn. 
+
+Residuals can be used to provide an indication as to how well the model fits the data. The validity of the simple linear regression assumptions can be checked graphically using different plots of the standardised residuals. The two most useful residual plots are:
+  
+1. A plot of the  residuals (on the vertical axis) against the fitted values from the regression. If the Linearity and Equal Spreads assumptions are valid, this plot should show a random scatter of points;
+
+2. A histogram of the  residuals. This should be of a roughly symmetric and bell shaped shape if the Normality assumption is adequate.
+
+### Residuals vs fit
+```{r}
+get_regression_points(CO2_model) %>% 
+ggplot(aes(x = Day, y = residual)) +
+  geom_point() +
+  labs(x = "Fitted Values (days)", y = "Residual", title = "Residuals vs Fits")
+
+```
+Since the points in the graph appear almost scattered, the equal variances assumption can be justified.
+
+### Histogram of the residuals
+```{r}
+get_regression_points(CO2_model) %>%
+ggplot( aes(x = residual)) +
+geom_histogram(bins=10, color = "white") +
+labs(x = "Residual")
+```
+Since this plot appears almost symmetric, the Normality assumption can be  justified.
+
+### Conclusion
+
+10. Give an overall conclusion for your analysis
+
+It can be concluded that a positive linear relationship exists between the two variables(CO2 and day), by looking at the scatter plot and regression plot of CO2 level and number of days in 2011.  $CO2=328.85218 + 0.16071Days is the equation of best fit line for the data and since the null hypothesis for slope = 0 is rejected which indicates that there is a significant dependence of CO2 level on the number of days in 2011. Further it is estimated that CO2 level increases by between 0.136 to 0.186 ppm on (average) for 1 day of number of days across a range of days 213 and 334.
+
+The $R^2$ for the model was 57.8% which suggests that an amount of variability in CO2 level is explained by its relationship with number of days in 2011. There can be other predictors to explain the rest of variability.
+
+The assumptions underlying the model look justifiable and reasonable.
