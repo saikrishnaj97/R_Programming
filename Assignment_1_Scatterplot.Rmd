@@ -1,0 +1,138 @@
+---
+title: "Visualising the performance of 4 countries"
+output: 
+  pdf_document:
+    toc: true
+    number_sections: true
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+In this document/report we read the data in CSV file to compare the values of two variables a and b across 4 countries -  Ireland, Scotland, England and Wales. Our data consists of two continuous variables - var_a and var_b and one categorical variable - country, which is represented as a factor. 
+
+```{r}
+library(knitr)
+library(kableExtra)
+data<-read.csv("week2_data_4cat.csv")
+str(data)
+kable(head(data),"latex",caption ="Sample of the dataset in consideration",booktabs =T) %>%
+  kable_styling(latex_options=c("striped","hold_position"))
+levels(data$country)<-c('England','Ireland','Scotland','Wales')
+```
+
+# Scatterplot
+
+## Plot
+For the countries - England, Ireland, Scotland and Wales, where the countries are represented by various shapes and colors as indicated by the legend given next to them, the following plot visualises the data of var-a against var-b.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+library(ggplot2)
+ggplot(data,aes(x=var_a,y=var_b,color=country,shape=country,size=country))+
+  geom_point()+
+  scale_color_manual(values=c("orange","blue","green","red"),name = "country")+
+  scale_shape_manual(values=c(0,3,5,1),name = "country")+
+  scale_size_manual(values=c(2,2,3,3),name = "country")+
+  scale_x_continuous(breaks= c(4,6,8,10,12,14,16,18,20)) +
+  labs(caption ="Fig 1: Plot of var_a vs var_b by country")+
+  xlab("var_a")+
+  ylab("var_b")+
+  theme_bw()+
+  theme(axis.text = element_text(size=10),
+        axis.title = element_text(size=10),
+        legend.title = element_text(face="bold",size=9),
+        legend.text = element_text(face="italic",size=10),
+        plot.caption = element_text(hjust=0.6))
+  
+```
+
+## Some Information regarding the above plots
+
+The above scatter plot is created using a library called ggplot2. Position, color, shape, and size are the aesthetics considered. Orange, Blue, Green, Red are the different colors selected ,so that the data in the plot can be easily distinguished. The shapes were selected not to have a fill because certain data overlaps.Ireland, England and Scotland were given different sizes since at point (6,6) all the countries overlap. Figures typically have captions below them, so the caption was used and modified to the horizontal center of the figure. To make the background white and grid lines light grey, the theme theme_bw was used, which inturn helps in highlighting the data points in the plot.
+ 
+
+# Statistical summary
+
+## Table
+For each country, the table below summarizes the mean, standard deviation and correlations.
+```{r}
+library(dplyr)
+data_table <- data  %>% group_by(country) %>% summarize(mean_a = mean(var_a),
+                                                       sd_a =sd(var_a),
+                                                       mean_b = mean(var_b),
+                                                       sd_b = sd(var_b),
+                                                       corr_ab = cor(var_a,var_b))
+data_table
+```
+
+```{r }
+kable(data_table,"latex",caption ="Summarized statistics table of all the 4 countries in consideration",
+      col.names=c("Country","Mean","SD","Mean","SD","Correlation(a,b)"),
+      booktabs =T) %>%
+  kable_styling(latex_options=c("striped","hold_position")) %>%
+  add_header_above(c(" "=1,"A"=2,"B"=2," "=1))
+```
+
+
+
+## Insights from the above Visualisation and summary statistics
+
+*Even though there are few outliers present, we can observe that the corelation between a and b is high indicating some relationship between a and b , except for wales.
+* England and scotland follow a linear realtionship w.r.to a and b, whereas Ireland follows a non-linear relationship.  
+* England and Scotland shares the same distribution because of a high number of overlapping values.  
+* From the visualization, we can even determine the minimum and maximum values of each country.
+* var_a and var_b and continuous variables , whereas country is a categorical variable . 
+# References
+
+- Week2 Tutorials
+- https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_pdf.pdf
+- https://bookdown.org/yihui/rmarkdown/pdf-document.html
+
+# Appendix
+
+```{r, eval=FALSE}
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(ggplot2) 
+
+data<-read.csv("week2_data_4cat.csv")
+str(data)
+kable(head(data),"latex",caption ="Sample of the dataset in consideration",booktabs =T) %>%
+  kable_styling(latex_options=c("striped","hold_position"))
+levels(data$country)<-c('England','Ireland','Scotland','Wales')
+
+ggplot(data,aes(x=var_a,y=var_b,color=country,shape=country,size=country))+
+  geom_point()+
+  scale_color_manual(values=c("orange","blue","green","red"),name = "country")+
+  scale_shape_manual(values=c(0,3,5,1),name = "country")+
+  scale_size_manual(values=c(2,2,3,3),name = "country")+
+  scale_x_continuous(breaks= c(4,6,8,10,12,14,16,18,20)) +
+  labs(caption ="Fig 1: Plot of var_a vs var_b by country")+
+  xlab("var_a")+
+  ylab("var_b")+
+  theme_bw()+
+  theme(axis.text = element_text(size=10),
+        axis.title = element_text(size=10),
+        legend.title = element_text(face="bold",size=9),
+        legend.text = element_text(face="italic",size=10),
+        plot.caption = element_text(hjust=0.6))
+
+data_table <- data  %>% group_by(country) %>% summarize(mean_a = mean(var_a),
+                                                       sd_a =sd(var_a),
+                                                       mean_b = mean(var_b),
+                                                       sd_b = sd(var_b),
+                                                       corr_ab = cor(var_a,var_b))
+data_table
+
+kable(data_table,"latex",caption ="Summarized statistics table of all the 4 countries in consideration",
+      col.names=c("Country","Mean","SD","Mean","SD","Correlation(a,b)"),
+      booktabs =T) %>%
+  kable_styling(latex_options=c("striped","hold_position")) %>%
+  add_header_above(c(" "=1,"A"=2,"B"=2," "=1))
+
+```

@@ -1,0 +1,132 @@
+---
+title: "Assignment_2_Data_Visualisation"
+author: "Saikrishna_Javvadi"
+header-includes:
+- \usepackage{pdflscape}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
+output: 
+  pdf_document:
+    toc: true
+    number_sections: true
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# PART 1
+
+Tints: \
+
+![Tints](/Users/javva/Downloads/Tints.png) \
+
+Hex Values- #5555a9, #6565a9, #7676a9, #8787a9, #9898a9, #a9a9a9 \
+
+Shades: \
+
+![Shades](/Users/javva/Downloads/Shades.png) \
+
+Hex Values: #5555a9, #4444a9, #3333a9, #2222a9, #1111a9, #0000a9 \
+
+Tones: \
+
+![Tones](/Users/javva/Downloads/Tones.png) \
+
+Hex Values: #3f3fbe, #4c4cb1, #5959a5, #656598, #72728b, #7f7f7f \
+
+Yes, the palettes can be used to encode both Qualitative and Quantitative data
+
+
+# PART 2
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+library(ggplot2)
+library(colorblindr)
+library(knitr)
+library(kableExtra)
+#library(gridExtra)
+
+#Loading mtcrs data and factorizing cyl
+data("mtcars")
+cars<-mtcars
+cars$cyl<-as.factor(cars$cyl)
+#Default color palette of ggplot2
+fig1<- ggplot(cars,aes(x=mpg, y=wt, color=cyl, shape=cyl)) +
+  geom_point()+
+  scale_color_manual(values=c("brown","blue","green"))+
+  xlab("Miles/gallon(US)")+
+  ylab("Weight(1000 lbs)")+
+  ggtitle("Default color palette of ggplot2")+
+  labs(color='# of cylinders', shape = '# of cylinders')+
+  theme_bw()
+fig1
+
+#Adding Okabe Ito palette as a layer to the existing plot
+fig2<- fig1+scale_color_OkabeIto(order=c(4,5,8))+ggtitle("Okabe Ito palette ")
+fig2
+
+#Adding Viridis palette as a layer to the existing plot
+fig3<- fig1+scale_color_viridis_d()+ggtitle("Viridis palette")
+fig3
+
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+#CVD accessibility plot using ggplot2's default colour palette
+cvd_grid(fig1) 
+
+#CVD accessibility plot using Okabe Ito palette
+cvd_grid(fig2) 
+
+#CVD accessibility plot using Viridis palette
+cvd_grid(fig3)
+```
+
+
+From the above plots, I understood the importance to consider CVD into consideration while plotting graphs. While I was trying different colours for the colour parameter, I figured we should not have red and green together as it becomes increasing difficult for people with CVD to distinguish between them.
+
+# Appendix
+
+```{r, eval=FALSE}
+library(ggplot2)
+library(colorblindr)
+library(knitr)
+library(kableExtra)
+#library(gridExtra)
+
+#Loading mtcrs data and factorizing cyl
+data("mtcars")
+cars<-mtcars
+cars$cyl<-as.factor(cars$cyl)
+#Default color palette of ggplot2
+fig1<- ggplot(cars,aes(x=mpg, y=wt, color=cyl, shape=cyl)) +
+  geom_point()+
+  scale_color_manual(values=c("brown","blue","green"))+
+  xlab("Miles/gallon(US)")+
+  ylab("Weight(1000 lbs)")+
+  ggtitle("Default color palette of ggplot2")+
+  labs(color='# of cylinders', shape = '# of cylinders')+
+  theme_bw()
+fig1
+
+#Adding Okabe Ito palette as a layer to the existing plot
+fig2<- fig1+scale_color_OkabeIto(order=c(4,5,8))+ggtitle("Okabe Ito palette ")
+fig2
+
+#Adding Viridis palette as a layer to the existing plot
+fig3<- fig1+scale_color_viridis_d()+ggtitle("Viridis palette")
+fig3
+
+#CVD accessibility plot using ggplot2's default colour palette
+cvd_grid(fig1)
+
+#CVD accessibility plot using Okabe Ito palette
+cvd_grid(fig2)
+
+#CVD accessibility plot using Viridis palette
+cvd_grid(fig3)
+```
+
+
